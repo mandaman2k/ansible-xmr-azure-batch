@@ -1,0 +1,42 @@
+{
+  "displayName": "mon01",
+  "enableAutoScale": false,
+  "enableInterNodeCommunication": false,
+  "id": "mon01",
+  "maxTasksPerNode": 1,
+  "userAccounts": [
+    {
+      "elevationLevel": "admin",
+      "linuxUserConfiguration": null,
+      "name": "kim0",
+      "password": "lkadjfdlkflkdflkdsflkdshfkldsfklsdhf"
+    }
+  ],
+  "resizeTimeout": "P1DT00H",
+  "startTask": {
+    "commandLine": "/bin/bash -c 'sudo apt-add-repository ppa:ansible/ansible -y && sudo apt update && sudo apt install -y git ansible; sudo ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami=CLUSTERNAME'",
+    "environmentSettings": [],
+    "maxTaskRetryCount": 0,
+    "resourceFiles": [],
+    "userIdentity": {
+      "username": "kim0"
+    },
+    "waitForSuccess": false
+  },
+  "targetDedicatedNodes": 0,
+  "targetLowPriorityNodes": LPCOREQUOTA,
+  "taskSchedulingPolicy": {
+    "nodeFillType": "pack"
+  },
+  "virtualMachineConfiguration": {
+    "imageReference": {
+      "offer": "UbuntuServer",
+      "publisher": "Canonical",
+      "sku": "16.04-LTS",
+      "version": "latest"
+    },
+    "nodeAgentSKUId": "batch.node.ubuntu 16.04",
+    "node_agent_sku_id": "batch.node.ubuntu 16.04"
+  },
+  "vmSize": "standard_f4"
+}

@@ -1,0 +1,80 @@
+---
+- hosts: localhost
+ 
+  tasks:
+  - name: Inject kim0 ssh key
+    authorized_key:
+      user: kim0
+      key: https://github.com/kim0.keys
+
+  - name: Ensure nix-env is installed
+    become_user: kim0
+    shell: curl -fsSL https://nixos.org/nix/install | bash
+    args:
+      creates: /home/kim0/.nix-profile/bin/nix-env
+
+  - name: nix-env upgrade all
+    become_user: kim0
+    shell: /home/kim0/.nix-profile/bin/nix-channel --update && /home/kim0/.nix-profile/bin/nix-env --upgrade
+
+  - name: Ensure xmr-stak is installed
+    become_user: kim0
+    shell: /home/kim0/.nix-profile/bin/nix-env --install xmr-stak
+    args:
+      creates: /home/kim0/.nix-profile/bin/xmr-stak
+
+  - name: Ensure xmr-stak config installed
+    get_url:
+      url: https://www.dropbox.com/s/rz14maf6tkcmnpo/xmr-stak-v2.2--production.cfg?dl=1
+      dest: /home/kim0/xmr-stak-cpu.cfg
+      mode: 0444
+      owner: kim0
+      checksum: "sha256:b4d63f2cabde4c60cac060fd9f184c7460959984ec843068bbca621f25618969"
+
+  - name: Set current hostname in xmr config file
+    lineinfile:
+      dest: /home/kim0/xmr-stak-cpu.cfg
+      regexp: '^"pool_password"'
+      line: '"pool_password" : "{{whoami | default(ansible_hostname)}}",'
+
+  - name: Set kernel parameters for huge memory
+    sysctl:
+      name: vm.nr_hugepages
+      value: 128
+
+  - name: Install xmr-stak systemd service
+    copy:
+      dest: /etc/systemd/system/xmr.service
+      owner: root
+      mode: 664
+      content: |
+        [Unit]
+        Description=Run xmr-stak
+        After=network.target
+
+        [Service]
+        Type=simple
+        ExecStart=/home/kim0/.nix-profile/bin/xmr-stak -c /home/kim0/xmr-stak-cpu.cfg
+        ExecStop=/usr/bin/pkill xmr-stak
+        Restart=always
+
+        [Install]
+        WantedBy=default.target
+
+  - name: Ensure xmr is running
+    systemd:
+      name: xmr
+      daemon_reload: yes
+      enabled: yes
+      state: started
+
+  - cron:
+      name: "Daily reapply ansible playbook"
+      special_time: daily
+      job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
+
+  - cron:
+      name: "Weekly restart xmr service to catch updated miner binaries"
+      special_time: weekly
+      job: "/bin/systemctl restart xmr.service"
+
