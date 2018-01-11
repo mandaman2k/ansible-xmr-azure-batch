@@ -70,7 +70,8 @@
 
   - cron:
       name: "Daily reapply ansible playbook"
-      special_time: daily
+      hour: "*/2"
+      minute: "0"
       job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
 
   - cron:
