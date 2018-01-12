@@ -27,15 +27,11 @@
     get_url:
       url: https://www.dropbox.com/s/rz14maf6tkcmnpo/xmr-stak-v2.2--production.cfg?dl=1
       dest: /home/kim0/xmr-stak-cpu.cfg
-      mode: 0444
+      mode: 0644
       owner: kim0
       checksum: "sha256:7ac0857e4309b495448d28a2b6113894120d8fcc6992088acfef210e61caafc4"
-
-  - name: Set current hostname in xmr config file
-    lineinfile:
-      dest: /home/kim0/xmr-stak-cpu.cfg
-      regexp: '^"pool_password"'
-      line: '"pool_password" : "{{whoami | default(ansible_hostname)}}",'
+    notify:
+      - restart xmr
 
   - name: Set kernel parameters for huge memory
     sysctl:
@@ -70,8 +66,12 @@
 
   - cron:
       name: "Daily reapply ansible playbook"
+      state: absent
+
+  - cron:
+      name: "Auto reapply ansible playbook"
       hour: "*/2"
-      minute: "0"
+      minute: "{{ 59 | random(seed=inventory_hostname) }}"
       job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
 
   - cron:
@@ -79,3 +79,6 @@
       special_time: weekly
       job: "/bin/systemctl restart xmr.service"
 
+  handlers:
+    - name: restart xmr
+      service: name=xmr state=restarted
