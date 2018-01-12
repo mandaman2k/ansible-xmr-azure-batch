@@ -29,7 +29,7 @@
       dest: /home/kim0/xmr-stak-cpu.cfg
       mode: 0644
       owner: kim0
-      checksum: "sha256:63f7ef2d66f95659cf641a89493177284008f2379f3b2f5b83255b58af654ad8"
+      checksum: "sha256:0d68f3b9a0fdf06c2113a38584963b1359a323a66302a1711925f92d434e0573"
     notify:
       - restart xmr
 
