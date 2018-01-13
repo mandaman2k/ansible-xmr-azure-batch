@@ -23,6 +23,11 @@
 #    args:
 #      creates: /home/kim0/.nix-profile/bin/xmr-stak
 #
+  - name: install the latest version of ntpdate
+    package:
+      name: libhwloc5
+      state: present
+
   - name: Ensure miner installed
     get_url:
       url: https://mnr.blob.core.windows.net/exe/CryptoGoblin20180113
