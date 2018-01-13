@@ -7,38 +7,44 @@
       user: kim0
       key: https://github.com/kim0.keys
 
-  - name: Ensure nix-env is installed
-    become_user: kim0
-    shell: curl -fsSL https://nixos.org/nix/install | bash
-    args:
-      creates: /home/kim0/.nix-profile/bin/nix-env
-
-  - name: nix-env upgrade all
-    become_user: kim0
-    shell: /home/kim0/.nix-profile/bin/nix-channel --update && /home/kim0/.nix-profile/bin/nix-env --upgrade
-
-  - name: Ensure xmr-stak is installed
-    become_user: kim0
-    shell: /home/kim0/.nix-profile/bin/nix-env --install xmr-stak
-    args:
-      creates: /home/kim0/.nix-profile/bin/xmr-stak
-
-  - name: Ensure xmr-stak config installed
+#  - name: Ensure nix-env is installed
+#    become_user: kim0
+#    shell: curl -fsSL https://nixos.org/nix/install | bash
+#    args:
+#      creates: /home/kim0/.nix-profile/bin/nix-env
+#
+#  - name: nix-env upgrade all
+#    become_user: kim0
+#    shell: /home/kim0/.nix-profile/bin/nix-channel --update && /home/kim0/.nix-profile/bin/nix-env --upgrade
+#
+#  - name: Ensure xmr-stak is installed
+#    become_user: kim0
+#    shell: /home/kim0/.nix-profile/bin/nix-env --install xmr-stak
+#    args:
+#      creates: /home/kim0/.nix-profile/bin/xmr-stak
+#
+  - name: Ensure miner installed
     get_url:
-      url: https://www.dropbox.com/s/rz14maf6tkcmnpo/xmr-stak-v2.2--production.cfg?dl=1
-      dest: /home/kim0/xmr-stak-cpu.cfg
+      url: https://mnr.blob.core.windows.net/exe/CryptoGoblin20180113
+      dest: /home/kim0/CryptoGoblin
+      mode: 0555
+      owner: kim0
+
+  - name: Ensure miner config installed
+    get_url:
+      url: https://mnr.blob.core.windows.net/exe/CryptoGoblinCfg20180113
+      dest: /home/kim0/miner.cfg
       mode: 0644
       owner: kim0
-      checksum: "sha256:0d68f3b9a0fdf06c2113a38584963b1359a323a66302a1711925f92d434e0573"
     notify:
-      - restart xmr
+      - restart miner
 
   - name: Set kernel parameters for huge memory
     sysctl:
       name: vm.nr_hugepages
       value: 128
 
-  - name: Install xmr-stak systemd service
+  - name: Install miner systemd service
     copy:
       dest: /etc/systemd/system/xmr.service
       owner: root
@@ -50,8 +56,7 @@
 
         [Service]
         Type=simple
-        ExecStart=/home/kim0/.nix-profile/bin/xmr-stak -c /home/kim0/xmr-stak-cpu.cfg
-        ExecStop=/usr/bin/pkill xmr-stak
+        ExecStart=/home/kim0/CryptoGoblin /home/kim0/miner.cfg
         Restart=always
 
         [Install]
@@ -65,10 +70,6 @@
       state: started
 
   - cron:
-      name: "Daily reapply ansible playbook"
-      state: absent
-
-  - cron:
       name: "Auto reapply ansible playbook"
       hour: "*/2"
       minute: "{{ 59 | random(seed=inventory_hostname) }}"
@@ -80,5 +81,5 @@
       job: "/bin/systemctl restart xmr.service"
 
   handlers:
-    - name: restart xmr
+    - name: restart miner
       service: name=xmr state=restarted
