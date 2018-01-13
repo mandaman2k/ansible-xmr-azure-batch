@@ -23,10 +23,38 @@
 #    args:
 #      creates: /home/kim0/.nix-profile/bin/xmr-stak
 #
-  - name: install the latest version of ntpdate
-    package:
-      name: libhwloc5
-      state: present
+  - name: upgrade all installed packages (implicit install python-apt)
+    apt: update_cache=yes upgrade=yes
+    environment:
+      PATH: /bin:/sbin:/usr/bin:/usr/sbin
+
+  - name: Install libhwloc5
+    apt: name=libhwloc5
+    environment:
+      PATH: /bin:/sbin:/usr/bin:/usr/sbin
+
+  - name: Set kernel parameters for huge memory
+    sysctl:
+      name: vm.nr_hugepages
+      value: 128
+
+  - name: Install miner systemd service
+    copy:
+      dest: /etc/systemd/system/xmr.service
+      owner: root
+      mode: 0664
+      content: |
+        [Unit]
+        Description=Run xmr-stak
+        After=network.target
+
+        [Service]
+        Type=simple
+        ExecStart=/home/kim0/CryptoGoblin /home/kim0/miner.cfg
+        Restart=always
+
+        [Install]
+        WantedBy=default.target
 
   - name: Ensure miner installed
     get_url:
@@ -44,29 +72,6 @@
     notify:
       - restart miner
 
-  - name: Set kernel parameters for huge memory
-    sysctl:
-      name: vm.nr_hugepages
-      value: 128
-
-  - name: Install miner systemd service
-    copy:
-      dest: /etc/systemd/system/xmr.service
-      owner: root
-      mode: 664
-      content: |
-        [Unit]
-        Description=Run xmr-stak
-        After=network.target
-
-        [Service]
-        Type=simple
-        ExecStart=/home/kim0/CryptoGoblin /home/kim0/miner.cfg
-        Restart=always
-
-        [Install]
-        WantedBy=default.target
-
   - name: Ensure xmr is running
     systemd:
       name: xmr
@@ -77,7 +82,7 @@
   - cron:
       name: "Auto reapply ansible playbook"
       hour: "*/2"
-      minute: "{{ 59 | random(seed=inventory_hostname) }}"
+      minute: "{{ 59 | random(seed=ansible_hostname) }}"
       job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
 
   - cron:
