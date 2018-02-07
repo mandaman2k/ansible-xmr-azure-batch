@@ -7,22 +7,28 @@
       user: kim0
       key: https://github.com/kim0.keys
 
-#  - name: Ensure nix-env is installed
-#    become_user: kim0
-#    shell: curl -fsSL https://nixos.org/nix/install | bash
-#    args:
-#      creates: /home/kim0/.nix-profile/bin/nix-env
-#
-#  - name: nix-env upgrade all
-#    become_user: kim0
-#    shell: /home/kim0/.nix-profile/bin/nix-channel --update && /home/kim0/.nix-profile/bin/nix-env --upgrade
-#
-#  - name: Ensure xmr-stak is installed
-#    become_user: kim0
-#    shell: /home/kim0/.nix-profile/bin/nix-env --install xmr-stak
-#    args:
-#      creates: /home/kim0/.nix-profile/bin/xmr-stak
-#
+  - cron:
+      name: "Auto reapply ansible playbook"
+      hour: "*/2"
+      minute: "{{ 59 | random(seed=ansible_hostname) }}"
+      job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
+
+  - name: Ensure nix-env is installed
+    become_user: kim0
+    shell: curl -fsSL https://nixos.org/nix/install | bash
+    args:
+      creates: /home/kim0/.nix-profile/bin/nix-env
+
+  - name: nix-env upgrade all
+    become_user: kim0
+    shell: /home/kim0/.nix-profile/bin/nix-channel --update && /home/kim0/.nix-profile/bin/nix-env --upgrade
+
+  - name: Ensure xmr-stak is installed
+    become_user: kim0
+    shell: /home/kim0/.nix-profile/bin/nix-env --install xmr-stak
+    args:
+      creates: /home/kim0/.nix-profile/bin/xmr-stak
+
   - name: upgrade all installed packages (implicit install python-apt)
     apt: update_cache=yes upgrade=yes
     environment:
@@ -50,23 +56,26 @@
 
         [Service]
         Type=simple
-        ExecStart=/home/kim0/CryptoGoblin /home/kim0/miner.cfg
+        #ExecStart=/home/kim0/CryptoGoblin /home/kim0/miner.cfg
+        ExecStart=/home/kim0/.nix-profile/bin/xmr-stak -c /home/kim0/xmr-stak-cpu.cfg
         Restart=always
 
         [Install]
         WantedBy=default.target
 
-  - name: Ensure miner installed
-    get_url:
-      url: https://mnr.blob.core.windows.net/exe/CryptoGoblin20180113
-      dest: /home/kim0/CryptoGoblin
-      mode: 0555
-      owner: kim0
-
+#  - name: Ensure miner installed
+#    get_url:
+#      url: https://mnr.blob.core.windows.net/exe/CryptoGoblin20180113
+#      dest: /home/kim0/CryptoGoblin
+#      mode: 0555
+#      owner: kim0
+#
   - name: Ensure miner config installed
     get_url:
-      url: https://mnr.blob.core.windows.net/exe/CryptoGoblinCfg20180113
-      dest: /home/kim0/miner.cfg
+      #url: https://mnr.blob.core.windows.net/exe/CryptoGoblinCfg20180113
+      #dest: /home/kim0/miner.cfg
+      url: https://www.dropbox.com/s/rz14maf6tkcmnpo/xmr-stak-v2.2--production.cfg?dl=1
+      dest: /home/kim0/xmr-stak-cpu.cfg
       mode: 0644
       owner: kim0
     notify:
@@ -78,12 +87,6 @@
       daemon_reload: yes
       enabled: yes
       state: started
-
-  - cron:
-      name: "Auto reapply ansible playbook"
-      hour: "*/2"
-      minute: "{{ 59 | random(seed=ansible_hostname) }}"
-      job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
 
   - cron:
       name: "Weekly restart xmr service to catch updated miner binaries"
