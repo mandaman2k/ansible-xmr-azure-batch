@@ -78,7 +78,7 @@
       dest: /home/kim0/xmr-stak-cpu.cfg
       mode: 0644
       owner: kim0
-      checksum: "sha256:312f5e206a5560a2d0f87b93dc8ed5590bbbdb2abbdda4dddd54bb539a9f3665"
+      checksum: "sha256:125e18b56da4e4cb08cfdd58370966d2549f03279004b74bfdd9a0da911f020c"
     notify:
       - restart miner
 
