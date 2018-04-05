@@ -57,6 +57,7 @@
         [Service]
         Type=simple
         #ExecStart=/home/kim0/CryptoGoblin /home/kim0/miner.cfg
+        WorkingDirectory=/home/kim0
         ExecStart=/home/kim0/.nix-profile/bin/xmr-stak -c /home/kim0/xmr-stak-cpu.cfg
         Restart=always
 
@@ -74,11 +75,21 @@
     get_url:
       #url: https://mnr.blob.core.windows.net/exe/CryptoGoblinCfg20180113
       #dest: /home/kim0/miner.cfg
-      url: https://www.dropbox.com/s/rz14maf6tkcmnpo/xmr-stak-v2.2--production.cfg?dl=1
+      url: https://www.dropbox.com/s/rchhwp3w5d4i6c7/xmr-stak-v2.4.2--production.cfg?dl=1
       dest: /home/kim0/xmr-stak-cpu.cfg
       mode: 0644
       owner: kim0
-      checksum: "sha256:125e18b56da4e4cb08cfdd58370966d2549f03279004b74bfdd9a0da911f020c"
+      checksum: "sha256:99b077b1653a13ca2cf1022fad178fd1587121974c3e3fe1b24f13d6031b11b7"
+    notify:
+      - restart miner
+
+  - name: Ensure miner pool config installed
+    get_url:
+      url: https://www.dropbox.com/s/v2nh8fgg93r58lb/pools-2.4.2.txt?dl=1
+      dest: /home/kim0/pools.txt
+      mode: 0644
+      owner: kim0
+      checksum: "sha256:dd0b7beb4244864f24733b99e7e95bc2af1fb09fcb922e9d2f120c696da320a4"
     notify:
       - restart miner
 
