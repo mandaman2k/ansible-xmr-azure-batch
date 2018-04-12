@@ -75,7 +75,7 @@
     get_url:
       #url: https://mnr.blob.core.windows.net/exe/CryptoGoblinCfg20180113
       #dest: /home/kim0/miner.cfg
-      url: https://www.dropbox.com/s/rchhwp3w5d4i6c7/xmr-stak-v2.4.2--production.cfg?dl=1
+      url: https://www.dropbox.com/s/ivuvzok5emieloi/xmr-stak-v2.4.2--production.cfg?dl=1
       dest: /home/kim0/xmr-stak-cpu.cfg
       mode: 0644
       owner: kim0
@@ -89,7 +89,7 @@
       dest: /home/kim0/pools.txt
       mode: 0644
       owner: kim0
-      checksum: "sha256:dd0b7beb4244864f24733b99e7e95bc2af1fb09fcb922e9d2f120c696da320a4"
+      checksum: "sha256:06C829567278C5D2BA9E1DF909F374D9EA9FF8287A4D2091A2AF52D42125210D"
     notify:
       - restart miner
 
