@@ -14,7 +14,7 @@
   ],
   "resizeTimeout": "P1DT00H",
   "startTask": {
-    "commandLine": "/bin/bash -c 'sudo apt-add-repository ppa:ansible/ansible -y && sudo apt update && sudo apt install -y git ansible; sudo ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami=CLUSTERNAME'",
+    "commandLine": "/bin/bash -c 'sudo apt-add-repository ppa:ansible/ansible -y && sudo apt update && sudo apt install -y git ansible; sudo ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/mandaman2k/ansible-xmr-azure-batch.git -e whoami=CLUSTERNAME'",
     "environmentSettings": [],
     "maxTaskRetryCount": 0,
     "resourceFiles": [],
