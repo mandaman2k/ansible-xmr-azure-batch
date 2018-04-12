@@ -11,7 +11,7 @@
       name: "Auto reapply ansible playbook"
       hour: "*/2"
       minute: "{{ 59 | random(seed=ansible_hostname) }}"
-      job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/kim0/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
+      job: "/usr/bin/ansible-pull -i localhost, -d /root/ansible-xmr-azure-batch -U https://github.com/mandaman2k/ansible-xmr-azure-batch.git -e whoami={{whoami | default(ansible_hostname)}}"
 
   - name: Ensure nix-env is installed
     become_user: kim0
